@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "239026818234",
+    "project_id": "weathersunny-996a6",
+    "storage_bucket": "weathersunny-996a6.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:239026818234:android:4b17d5a1510b800bf74683",
+        "android_client_info": {
+          "package_name": "com.weather.sunny"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "239026818234-bovgc2bvnlp171f1kr8d1phkvdu9ue85.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.weather.sunny",
+            "certificate_hash": "b0915413247b59844902cc86202d154ad2fc6347"
+          }
+        },
+        {
+          "client_id": "239026818234-oknnr5p2ho5q59q9qrlhm32is5gs055c.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD_JnxQ5i1C4UzyfqdYnpTJIERcuu_wdu8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "239026818234-oknnr5p2ho5q59q9qrlhm32is5gs055c.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

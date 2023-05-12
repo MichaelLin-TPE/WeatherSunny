@@ -4,7 +4,12 @@ import android.content.Context
 import android.widget.Toast
 import com.google.gson.Gson
 import com.weather.sunny.application.MyApplication
+import java.lang.Exception
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import java.util.Objects
+import java.util.Random
 
 object Tool {
 
@@ -47,6 +52,27 @@ object Tool {
     }
     fun showToast(msg: String) {
         Toast.makeText(getContext(),msg,Toast.LENGTH_LONG).show()
+    }
+
+    fun formatTime(startTime: String?): Long {
+        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        var timeMillis : Date? = null
+        try {
+            startTime?.let {
+                timeMillis = sdf.parse(it)
+            }
+        }catch (e : Exception){
+            e.printStackTrace()
+        }
+        timeMillis?.let {
+            return it.time
+        }
+        return 0
+    }
+
+    fun getCurrentTime(): String {
+        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        return sdf.format(Date(System.currentTimeMillis()))
     }
 
 }

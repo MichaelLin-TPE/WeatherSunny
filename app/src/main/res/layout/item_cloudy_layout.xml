@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/cloudy1"
+        android:contentDescription="@null"
+        android:layout_width="50dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="15dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/cloudy"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/cloudy2"
+        android:contentDescription="@null"
+        android:layout_width="50dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="25dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/cloudy"
+        app:layout_constraintLeft_toLeftOf="@id/cloudy1"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/cloudy3"
+        android:contentDescription="@null"
+        android:layout_width="50dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="25dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/cloudy"
+        app:layout_constraintLeft_toLeftOf="@id/cloudy2"
+        app:layout_constraintTop_toTopOf="@id/cloudy1" />
+
+    <ImageView
+        android:id="@+id/cloudy4"
+        android:contentDescription="@null"
+        android:layout_width="50dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="40dp"
+        android:layout_marginTop="10dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/cloudy"
+        app:layout_constraintLeft_toLeftOf="@id/cloudy3"
+        app:layout_constraintTop_toTopOf="@id/cloudy1" />
+
+    <ImageView
+        android:id="@+id/cloudy5"
+        android:contentDescription="@null"
+        android:layout_width="50dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="55dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/cloudy"
+        app:layout_constraintLeft_toLeftOf="@id/cloudy4"
+        app:layout_constraintTop_toTopOf="@id/cloudy1" />
+
+    <ImageView
+        android:id="@+id/cloudy6"
+        android:layout_width="50dp"
+        android:contentDescription="@null"
+        android:layout_height="40dp"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="25dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/cloudy"
+        app:layout_constraintLeft_toLeftOf="@id/cloudy5"
+        app:layout_constraintTop_toTopOf="@id/cloudy1" />
+
+    <ImageView
+        android:id="@+id/cloudy7"
+        android:layout_width="50dp"
+        android:contentDescription="@null"
+        android:layout_height="40dp"
+        android:layout_marginStart="20dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/cloudy"
+        app:layout_constraintLeft_toLeftOf="@id/cloudy6"
+        app:layout_constraintTop_toTopOf="@id/cloudy1" />
+
+    <ImageView
+        android:id="@+id/cloudy8"
+        android:layout_width="50dp"
+        android:contentDescription="@null"
+        android:layout_height="40dp"
+        android:layout_marginEnd="15dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/cloudy"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@id/cloudy1" />
+
+    <ImageView
+        android:id="@+id/sun"
+        android:src="@drawable/sun"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginEnd="25dp"
+        app:layout_constraintTop_toTopOf="parent"
+        android:contentDescription="@null"
+        android:visibility="invisible"
+        android:layout_width="70dp"
+        android:layout_height="70dp"/>
+
+    <ImageView
+        android:id="@+id/cloudy9"
+        android:layout_width="50dp"
+        android:layout_height="40dp"
+        android:contentDescription="@null"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="35dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/cloudy"
+        app:layout_constraintRight_toRightOf="@id/cloudy8"
+        app:layout_constraintTop_toTopOf="@id/cloudy1" />
+
+    <ImageView
+        android:id="@+id/cloudy10"
+        android:layout_width="50dp"
+        android:layout_height="40dp"
+        android:contentDescription="@null"
+        android:layout_marginEnd="35dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/cloudy"
+        app:layout_constraintRight_toRightOf="@id/cloudy9"
+        app:layout_constraintTop_toTopOf="@id/cloudy1" />
+
+    <ImageView
+        android:id="@+id/cloudy11"
+        android:layout_width="50dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="15dp"
+        android:contentDescription="@null"
+        android:layout_marginEnd="35dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/cloudy"
+        app:layout_constraintRight_toRightOf="@id/cloudy10"
+        app:layout_constraintTop_toTopOf="@id/cloudy1" />
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

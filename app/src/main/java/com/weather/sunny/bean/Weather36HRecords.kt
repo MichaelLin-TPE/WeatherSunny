@@ -34,5 +34,7 @@ data class Weather36Parameter(
     @SerializedName("parameterName")
     val parameterName: String? = null,
     @SerializedName("parameterValue")
-    val parameterValue: String? = null
+    val parameterValue: String? = null,
+    @SerializedName("parameterUnit")
+    val parameterUnit: String? = null
 )

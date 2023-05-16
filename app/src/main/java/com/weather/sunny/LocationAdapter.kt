@@ -5,18 +5,18 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.weather.sunny.databinding.ItemLocationLayoutBinding
 
-class LocationAdapter(private val dataList: MutableList<String> , private val onLocationSelectedListener: OnLocationSelectedListener) :
+class LocationAdapter(private val dataList: MutableList<Pair<String,String>> , private val onLocationSelectedListener: OnLocationSelectedListener) :
     RecyclerView.Adapter<LocationAdapter.ViewHolder>() {
     class ViewHolder(
         private val binding: ItemLocationLayoutBinding,
         private val onLocationSelectedListener: OnLocationSelectedListener
     ) :
         RecyclerView.ViewHolder(binding.root) {
-        fun showCity(locationName: String) {
-            binding.data = locationName
+        fun showCity(pair: Pair<String, String>) {
+            binding.data = pair.first
             binding.executePendingBindings()
             binding.rootView.setOnClickListener {
-                onLocationSelectedListener.onCitySelected(locationName)
+                onLocationSelectedListener.onCitySelected(pair)
             }
         }
     }
@@ -34,7 +34,7 @@ class LocationAdapter(private val dataList: MutableList<String> , private val on
     }
 
     fun interface OnLocationSelectedListener{
-        fun onCitySelected(locationName:String)
+        fun onCitySelected(pair:Pair<String,String>)
     }
 
 }

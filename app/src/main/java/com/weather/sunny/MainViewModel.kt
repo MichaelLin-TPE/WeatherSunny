@@ -7,7 +7,6 @@ import com.google.gson.Gson
 import com.weather.sunny.base.BaseViewModel
 import com.weather.sunny.bean.Weather36Time
 import com.weather.sunny.bean.Weather36WeatherElement
-import com.weather.sunny.bean.WeatherForecastForOneWeek
 import com.weather.sunny.bean.WeatherOneWeekData
 import com.weather.sunny.bean.WeatherOneWeekElement
 import com.weather.sunny.bean.WeatherOneWeekLocationData
@@ -16,11 +15,11 @@ import com.weather.sunny.bean.WeatherOneWeekTime
 import com.weather.sunny.http.ApiWrapper
 import com.weather.sunny.tool.Tool
 import com.weather.sunny.tool.Tool.formatTime
+import com.weather.sunny.tool.Tool.getStringExtension
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
-import java.util.ArrayList
 import java.util.Random
 import java.util.concurrent.TimeUnit
 
@@ -28,7 +27,9 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
 
     val locationListLiveData = MutableLiveData<MutableList<Pair<String, String>>>()
     val showLocationName = MutableLiveData<String>()
+    val showSecondLocationName = MutableLiveData<String>()
     val startAnimationLocationListLiveData = MutableLiveData<Pair<Float, Float>>()
+    val startAnimationSecondLocationListLiveData = MutableLiveData<Pair<Float, Float>>()
     val showCloudyLiveData = MutableLiveData<Boolean>() //多雲系列
     val showCloudyAndSunLiveData = MutableLiveData<Boolean>() //晴時多雲系列
     val showSunLiveData = MutableLiveData<Boolean>() //晴天系列
@@ -46,22 +47,31 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
     val showPopPercentLiveData = MutableLiveData<String>() // 顯示降雨機率
     val showCiInformationLivedata = MutableLiveData<String>()
     val showTempLiveData = MutableLiveData<String>()
+    val showOneWeekForecastLiveData = MutableLiveData<MutableList<WeatherOneWeekData>>()
+    val showLocationList = MutableLiveData<MutableList<String>>()
     private var rainingDisposable: Disposable? = null
     private var thunderDisposable: Disposable? = null
+    private var targetSecondLocationName = ""
 
     private var isOpenLocationList = false
+    private var isOpenSecondLocationList = false
     private lateinit var cloudyList: List<Int>
     private lateinit var cloudyAndSunList: List<Int>
     private var viewIndex = 0
     private var minT = ""
     private var maxT = ""
     private val oneWeekDataList = ArrayList<WeatherOneWeekData>()
+    private val allLocationData = ArrayList<WeatherOneWeekLocations>()
+
     init {
         showLocationName.value = Tool.getLocationList()[0].first
         locationListLiveData.value = Tool.getLocationList()
         searchWeatherByLocation(Tool.getLocationList()[0].first)
         showCurrentTime()
         searchWeatherByLocationForOneWeek(Tool.getLocationList()[0].second)
+
+
+        Log.i("Michael", "getString : ${R.string.internet_error.getStringExtension()}")
     }
 
     private fun searchWeatherByLocationForOneWeek(locationKey: String) {
@@ -71,7 +81,20 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
             .doOnError {
                 showErrorMsg(R.string.internet_error.toString())
             }.subscribe({
-                catchWeatherOfOneWeek(it)
+                it.record?.locationList?.let { locationList ->
+                    if (locationList.isNotEmpty() && locationList[0].locationDataList != null) {
+                        if (locationList[0].locationDataList!!.isNotEmpty()) {
+                            locationList[0].locationDataList!![0].locationName?.let { locationName ->
+                                targetSecondLocationName = locationName
+                                showSecondLocationName.value = locationName
+                            }
+                        }
+                        allLocationData.clear()
+                        allLocationData.addAll(locationList)
+                        handleLocationList(locationList)
+                        showSecondLocationList(locationList)
+                    }
+                }
 
             }, {
                 showErrorMsg(R.string.internet_error.toString())
@@ -79,28 +102,41 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
         )
     }
 
-    private fun catchWeatherOfOneWeek(it: WeatherForecastForOneWeek) {
-        it.record?.locationList?.let {locationList->
-            if (locationList.isEmpty()){
-                return
+    private fun showSecondLocationList(locationList: MutableList<WeatherOneWeekLocations>) {
+        val list = mutableListOf<String>()
+        for (data in locationList) {
+            data.locationDataList?.let {
+                for (location in it) {
+                    location.locationName?.let { locationName ->
+                        list.add(locationName)
+                    }
+                }
             }
-            handleLocationList(locationList)
         }
+        if (list.isEmpty()) {
+            return
+        }
+        showSecondLocationName.value = list[0]
+        showLocationList.value = list
     }
 
     private fun handleLocationList(locationList: MutableList<WeatherOneWeekLocations>) {
-        for (data in locationList){
-            if (data.locationDataList.isNullOrEmpty()){
+        oneWeekDataList.clear()
+        for (data in locationList) {
+            if (data.locationDataList.isNullOrEmpty()) {
                 break
             }
             handleLocationData(data.locationDataList)
         }
-        Log.i("Michael","迴圈跑完了")
+        Log.i("Michael", "迴圈跑完了")
+        showOneWeekForecastLiveData.value = oneWeekDataList
+
     }
 
     private fun handleLocationData(locationDataList: ArrayList<WeatherOneWeekLocationData>) {
-        for (data in locationDataList){
-            if (data.locationName != null && data.locationName == "蘇澳鎮"){
+        Log.i("Michael", "handleLocationData")
+        for (data in locationDataList) {
+            if (data.locationName != null && data.locationName == targetSecondLocationName) {
                 data.elementList?.let {
                     handleWeatherElement(it)
                 }
@@ -109,23 +145,31 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
     }
 
     private fun handleWeatherElement(elementList: ArrayList<WeatherOneWeekElement>) {
-        for (data in elementList){
-            if (data.elementName != null && data.elementName == "T" && !data.timeList.isNullOrEmpty()){
+        Log.i("Michael", "handleWeatherElement")
+        for (data in elementList) {
+            if (data.elementName != null && data.elementName == "T" && !data.timeList.isNullOrEmpty()) {
                 handleTimeList(data.timeList)
             }
         }
     }
 
     private fun handleTimeList(timeList: ArrayList<WeatherOneWeekTime>) {
-         for (data in timeList){
-             if (data.startTime == null || data.endTime == null || data.elementValueList.isNullOrEmpty()){
-                 continue
-             }
+        Log.i("Michael", "handleTimeList")
+        for (data in timeList) {
+            if (data.startTime == null || data.endTime == null || data.elementValueList.isNullOrEmpty()) {
+                continue
+            }
 
-             oneWeekDataList.add(WeatherOneWeekData(data.startTime.formatTime(),data.endTime.formatTime(),
-                 data.elementValueList[0].value!!))
-             Log.i("Michael","新增資料 : ${Gson().toJson(oneWeekDataList)}")
-         }
+            oneWeekDataList.add(
+                WeatherOneWeekData(
+                    data.startTime.formatTime(),
+                    data.endTime.formatTime(),
+                    data.elementValueList[0].value!! + "°C",
+                    "${data.startTime.formatTime()}\n|\n${data.endTime.formatTime()}"
+                )
+            )
+            Log.i("Michael", "新增資料 : ${Gson().toJson(oneWeekDataList)}")
+        }
     }
 
     private fun searchWeatherByLocation(location: String) {
@@ -193,10 +237,7 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
                 Log.i("Michael", "錯誤 無資料")
                 continue
             }
-            Log.i(
-                "Michael",
-                "type $type startTime : $startTime endTime : $endTime currentTime : ${System.currentTimeMillis()}"
-            )
+
             if (System.currentTimeMillis() in startTime..endTime) {
                 when (type) {
                     "Wx" -> {
@@ -305,6 +346,14 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
 
     }
 
+    fun onLocationSelectedListener(locationName: String) {
+        showSecondLocationName.value = locationName
+        isOpenSecondLocationList = false
+        startAnimationSecondLocationListLiveData.value = Pair(1f, 0f)
+        targetSecondLocationName = locationName
+        handleLocationList(allLocationData)
+    }
+
     fun onDestroy() {
         clearCompositeDisposable()
     }
@@ -404,6 +453,12 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
             mCompositeSubscription.add(it)
         }
 
+    }
+
+    fun onLocationBarClickListener() {
+        isOpenSecondLocationList = !isOpenSecondLocationList
+        startAnimationSecondLocationListLiveData.value =
+            if (isOpenSecondLocationList) Pair(0f, 1f) else Pair(1f, 0f)
     }
 
 

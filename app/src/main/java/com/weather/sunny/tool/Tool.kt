@@ -1,16 +1,20 @@
 package com.weather.sunny.tool
 
+import android.app.Activity
 import android.content.Context
+import android.os.Build
+import android.util.DisplayMetrics
+import android.util.Size
 import android.view.View
+import android.view.WindowInsets
+import android.view.WindowManager
 import android.widget.Toast
 import com.google.gson.Gson
 import com.weather.sunny.application.MyApplication
-import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import java.util.Objects
-import java.util.Random
+
 
 object Tool {
 
@@ -29,6 +33,14 @@ object Tool {
         return array
     }
 
+    fun Int.getStringExtension():String{
+        return getContext().getString(this)
+    }
+
+    fun Int.getStringExtension(content1:String,content2:String):String{
+        return getContext().getString(this)
+    }
+
     fun Int.convertDp():Int{
         val scale = getContext().resources.displayMetrics.density
         return (this * scale +0.5f).toInt()
@@ -44,6 +56,31 @@ object Tool {
             e.printStackTrace()
         }
         return sdf1.format(date)
+    }
+
+    fun getScreenBottomY(activity:Activity): Int {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val windowManager = activity.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+            val metrics = windowManager.currentWindowMetrics
+            val windowInsets = metrics.windowInsets
+
+            val insets = windowInsets.getInsetsIgnoringVisibility(
+                WindowInsets.Type.navigationBars()
+                        or WindowInsets.Type.displayCutout()
+            )
+
+            val insetsWidth = insets.right + insets.left
+            val insetsHeight = insets.top + insets.bottom
+
+// Legacy size that Display#getSize() returns
+            val bounds = metrics.bounds
+            val legacySize = Size(bounds.width() - insetsWidth, bounds.height() - insetsHeight)
+            return legacySize.height
+        }
+        val displayMetrics = DisplayMetrics()
+        activity.windowManager.defaultDisplay.getMetrics(displayMetrics)
+        return displayMetrics.heightPixels
     }
 
     fun getLocationList():MutableList<Pair<String,String>>{

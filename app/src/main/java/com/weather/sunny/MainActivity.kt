@@ -3,13 +3,16 @@ package com.weather.sunny
 import android.animation.Animator
 import android.animation.ObjectAnimator
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.databinding.DataBindingUtil
 import com.weather.sunny.base.BaseActivity
+import com.weather.sunny.bean.WeatherOneWeekData
 import com.weather.sunny.databinding.ActivityMainBinding
+import com.weather.sunny.tool.Tool
 import com.weather.sunny.tool.Tool.convertDp
 import com.weather.sunny.tool.Tool.getLocationXY
 import java.util.Random
@@ -67,6 +70,34 @@ class MainActivity : BaseActivity() {
         }
         viewModel.showLocationName.observe(this) {
             binding.tvLocationName.text = it
+        }
+
+        viewModel.startAnimationSecondLocationListLiveData.observe(this){
+            val alphaAnimation =
+                ObjectAnimator.ofFloat(binding.listBg1, View.ALPHA, it.first, it.second)
+            alphaAnimation.duration = 200
+            alphaAnimation.addListener(object : Animator.AnimatorListener{
+                override fun onAnimationStart(animation: Animator) {
+                    if (it.first == 0f){
+                        binding.listBg1.visibility = View.VISIBLE
+                    }
+                }
+
+                override fun onAnimationEnd(animation: Animator) {
+                    if (it.first == 1f){
+                        binding.listBg1.visibility = View.INVISIBLE
+                    }
+                }
+
+                override fun onAnimationCancel(animation: Animator) {
+
+                }
+
+                override fun onAnimationRepeat(animation: Animator) {
+
+                }
+            })
+            alphaAnimation.start()
         }
 
         viewModel.startAnimationLocationListLiveData.observe(this) {
@@ -244,7 +275,37 @@ class MainActivity : BaseActivity() {
         viewModel.showTempLiveData.observe(this){
             binding.tvTemp.text = it
         }
+        viewModel.showOneWeekForecastLiveData.observe(this){
+            showOneWeekView(it)
 
+        }
+        viewModel.showLocationList.observe(this){
+            showLocationList(it)
+        }
+        viewModel.showSecondLocationName.observe(this){
+            binding.tvLocationName1.text = it
+        }
+
+    }
+
+    private fun showLocationList(it: MutableList<String>) {
+        binding.locationList1.apply {
+            adapter = SecondLocationAdapter(it) {locationName->
+                viewModel.onLocationSelectedListener(locationName)
+            }
+        }
+    }
+
+    private fun showOneWeekView(it: MutableList<WeatherOneWeekData>) {
+
+        val targetHeight = Tool.getScreenBottomY(this) - binding.basicInfoView.bottom - 200
+        Log.i("Michael","targetHeight : $targetHeight basicInfoView Bottom : ${binding.basicInfoView.bottom} screenBottomY : ${Tool.getScreenBottomY(this)}")
+        val layoutParams = binding.oneWeekList.layoutParams
+        layoutParams.height = targetHeight
+        binding.oneWeekList.layoutParams = layoutParams
+        binding.oneWeekList.apply {
+            adapter = OneWeekAdapter(it)
+        }
     }
 
     private fun showCloudyDarkAndRain(isShowThunder: Boolean) {
@@ -341,7 +402,14 @@ class MainActivity : BaseActivity() {
         binding.searchView.setOnClickListener {
             viewModel.onSearchBarClickListener()
         }
+        binding.locationView.setOnClickListener {
+            viewModel.onLocationBarClickListener()
+        }
+
         binding.listBg.alpha = 0f
+        binding.listBg.visibility = View.INVISIBLE
+
+        binding.listBg1.alpha = 0f
         binding.listBg.visibility = View.INVISIBLE
 
     }

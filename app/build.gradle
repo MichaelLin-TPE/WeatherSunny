@@ -75,4 +75,9 @@ dependencies {
     annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
     implementation 'com.squareup.okhttp3:okhttp:4.9.3'
     implementation 'com.github.bumptech.glide:okhttp3-integration:4.12.0'
+    implementation 'com.google.android.gms:play-services-location:18.0.0'
+
+    implementation 'io.github.youth5201314:banner:2.2.2'
+
+    implementation "com.google.android.gms:play-services-location:15.0.1"
 }

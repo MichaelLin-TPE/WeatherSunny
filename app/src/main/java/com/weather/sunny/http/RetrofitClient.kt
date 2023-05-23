@@ -45,12 +45,12 @@ object RetrofitClient {
         override fun intercept(chain: Interceptor.Chain): Response {
             val request = chain.request()
             val requestUrl = request.url.toString()
-            Log.i("Michael","requestUrl : $requestUrl")
+            Log.e("HttpRequest","requestUrl : $requestUrl")
 
             val response = chain.proceed(chain.request())
             val responseData = response.body?.string()
             if (responseData != null){
-                Log.i("Michael","response : $responseData")
+                Log.e("HttpRequest","response : $responseData")
             }
 
             return chain.proceed(request)

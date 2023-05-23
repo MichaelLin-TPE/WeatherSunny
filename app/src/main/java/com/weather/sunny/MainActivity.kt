@@ -1,27 +1,37 @@
 package com.weather.sunny
 
+import android.Manifest
 import android.animation.Animator
 import android.animation.ObjectAnimator
+import android.annotation.SuppressLint
+import android.content.pm.PackageManager
+import android.location.Geocoder
+import android.location.Location
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.tasks.OnSuccessListener
 import com.weather.sunny.base.BaseActivity
 import com.weather.sunny.bean.WeatherOneWeekData
 import com.weather.sunny.databinding.ActivityMainBinding
 import com.weather.sunny.tool.Tool
 import com.weather.sunny.tool.Tool.convertDp
 import com.weather.sunny.tool.Tool.getLocationXY
+import java.lang.Exception
+import java.util.Locale
 import java.util.Random
 
 class MainActivity : BaseActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var viewModel: MainViewModel
-    private lateinit var weatherStatus : View
+    private lateinit var weatherStatus: View
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,12 +39,53 @@ class MainActivity : BaseActivity() {
         viewModel = getViewModel(MainViewModel::class.java)
         initView()
         handleLiveData()
+    }
 
+    @SuppressLint("MissingPermission") //因為走到這裡 一定會有權限
+    private fun searchLocation() {
+        Log.i("Michael", "允許定位")
+        // permission was granted
+        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        fusedLocationClient.lastLocation.addOnSuccessListener(this@MainActivity) {
+            val geocoder = Geocoder(this@MainActivity, Locale.getDefault())
+            try {
+                val addressList = geocoder.getFromLocation(it.latitude, it.longitude, 1)
+                val address = addressList?.get(0)
+                val addressContent = address?.getAddressLine(0)
+                val city = address?.locality
+                val state = address?.adminArea
+                val country = address?.countryName
+                val postalCode = address?.postalCode
+                val knownName = address?.featureName
+                Log.i(
+                    "Michael",
+                    "address : $addressContent city : $city state : $state country : $country postalCode : $postalCode knownName : $knownName"
+                )
+                viewModel.onCatchStateAndArea(city, state)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 666) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                searchLocation()
+            } else {
+                Log.i("Michael", "不允許定位")
+                viewModel.onStartToFlow()
+            }
+        }
     }
 
 
-
-    private fun showCloudyAndSun(){
+    private fun showCloudyAndSun() {
         weatherStatus = View.inflate(this, R.layout.item_cloudy_layout, null)
         weatherStatus.visibility = View.INVISIBLE
         binding.weatherStatusView.addView(weatherStatus)
@@ -46,6 +97,7 @@ class MainActivity : BaseActivity() {
         ivSun.visibility = View.VISIBLE
         viewModel.onStartCloudyAndSunAnimation()
     }
+
     private fun showCloudy() {
         weatherStatus = View.inflate(this, R.layout.item_cloudy_layout, null)
         weatherStatus.visibility = View.INVISIBLE
@@ -65,6 +117,14 @@ class MainActivity : BaseActivity() {
     }
 
     private fun handleLiveData() {
+        viewModel.searchLocationLiveData.observe(this) {
+            searchLocation()
+        }
+
+        viewModel.requestGPSPermissionLiveData.observe(this) {
+            requestGPSPermission()
+        }
+
         viewModel.locationListLiveData.observe(this) { dataList ->
             showLocation(dataList)
         }
@@ -72,19 +132,19 @@ class MainActivity : BaseActivity() {
             binding.tvLocationName.text = it
         }
 
-        viewModel.startAnimationSecondLocationListLiveData.observe(this){
+        viewModel.startAnimationSecondLocationListLiveData.observe(this) {
             val alphaAnimation =
                 ObjectAnimator.ofFloat(binding.listBg1, View.ALPHA, it.first, it.second)
             alphaAnimation.duration = 200
-            alphaAnimation.addListener(object : Animator.AnimatorListener{
+            alphaAnimation.addListener(object : Animator.AnimatorListener {
                 override fun onAnimationStart(animation: Animator) {
-                    if (it.first == 0f){
+                    if (it.first == 0f) {
                         binding.listBg1.visibility = View.VISIBLE
                     }
                 }
 
                 override fun onAnimationEnd(animation: Animator) {
-                    if (it.first == 1f){
+                    if (it.first == 1f) {
                         binding.listBg1.visibility = View.INVISIBLE
                     }
                 }
@@ -104,15 +164,15 @@ class MainActivity : BaseActivity() {
             val alphaAnimation =
                 ObjectAnimator.ofFloat(binding.listBg, View.ALPHA, it.first, it.second)
             alphaAnimation.duration = 200
-            alphaAnimation.addListener(object : Animator.AnimatorListener{
+            alphaAnimation.addListener(object : Animator.AnimatorListener {
                 override fun onAnimationStart(animation: Animator) {
-                    if (it.first == 0f){
+                    if (it.first == 0f) {
                         binding.listBg.visibility = View.VISIBLE
                     }
                 }
 
                 override fun onAnimationEnd(animation: Animator) {
-                    if (it.first == 1f){
+                    if (it.first == 1f) {
                         binding.listBg.visibility = View.INVISIBLE
                     }
                 }
@@ -134,23 +194,23 @@ class MainActivity : BaseActivity() {
             binding.weatherStatusView.removeAllViews()
             showCloudy()
         }
-        viewModel.showCloudyAndSunLiveData.observe(this){
+        viewModel.showCloudyAndSunLiveData.observe(this) {
             binding.weatherStatusView.removeAllViews()
             showCloudyAndSun()
         }
-        viewModel.showCloudyAndCloudyDarkLiveData.observe(this){
+        viewModel.showCloudyAndCloudyDarkLiveData.observe(this) {
             binding.weatherStatusView.removeAllViews()
             showCloudyAndCloudyDark()
         }
-        viewModel.showCloudyDarkLiveData.observe(this){
+        viewModel.showCloudyDarkLiveData.observe(this) {
             binding.weatherStatusView.removeAllViews()
             showCloudyDark()
         }
-        viewModel.showCloudyAndRainLiveData.observe(this){
+        viewModel.showCloudyAndRainLiveData.observe(this) {
             binding.weatherStatusView.removeAllViews()
             showCloudyAndRain()
         }
-        viewModel.showCloudyAnimationLiveData.observe(this){
+        viewModel.showCloudyAnimationLiveData.observe(this) {
             val ivCloudy = weatherStatus.findViewById<ImageView>(it)
             ivCloudy.post {
                 val animator = ObjectAnimator.ofFloat(ivCloudy, "x", ivCloudy.x, ivCloudy.x + 10f)
@@ -162,7 +222,7 @@ class MainActivity : BaseActivity() {
             }
         }
 
-        viewModel.showCloudyAndSunAnimationLiveData.observe(this){
+        viewModel.showCloudyAndSunAnimationLiveData.observe(this) {
             val ivCloudy = weatherStatus.findViewById<ImageView>(it)
             ivCloudy.post {
                 val animator = ObjectAnimator.ofFloat(ivCloudy, "x", ivCloudy.x, ivCloudy.x + 10f)
@@ -174,7 +234,7 @@ class MainActivity : BaseActivity() {
             }
         }
 
-        viewModel.showSunSpinAnimationLiveData.observe(this){
+        viewModel.showSunSpinAnimationLiveData.observe(this) {
             val ivSun = weatherStatus.findViewById<ImageView>(it)
             ivSun.post {
                 val animator = ObjectAnimator.ofFloat(ivSun, "rotation", 0f, 360f)
@@ -184,34 +244,37 @@ class MainActivity : BaseActivity() {
             }
         }
 
-        viewModel.showCloudyDarkAndRainLiveData.observe(this){
+        viewModel.showCloudyDarkAndRainLiveData.observe(this) {
             binding.weatherStatusView.removeAllViews()
             showCloudyDarkAndRain(false)
         }
 
-        viewModel.showCloudyDarkAndRainWithThunderLiveData.observe(this){
+        viewModel.showCloudyDarkAndRainWithThunderLiveData.observe(this) {
             binding.weatherStatusView.removeAllViews()
             showCloudyDarkAndRain(true)
         }
 
-        viewModel.showSunLiveData.observe(this){
+        viewModel.showSunLiveData.observe(this) {
             showSun()
         }
 
-        viewModel.showThunderLiveData.observe(this){
-            val rainView = View.inflate(this,R.layout.item_thunder_layout,null)
+        viewModel.showThunderLiveData.observe(this) {
+            val rainView = View.inflate(this, R.layout.item_thunder_layout, null)
             rainView.visibility = View.INVISIBLE
             binding.rootView.addView(rainView)
             rainView.x = it.first
             rainView.y = it.second
             rainView.visibility = View.VISIBLE
-            val layoutParamsMargin = ViewGroup.MarginLayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT)
-            layoutParamsMargin.setMargins(0,Random().nextInt(15.convertDp()),0,0)
+            val layoutParamsMargin = ViewGroup.MarginLayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            layoutParamsMargin.setMargins(0, Random().nextInt(15.convertDp()), 0, 0)
             rainView.layoutParams = layoutParamsMargin
             val alphaAnimation =
                 ObjectAnimator.ofFloat(rainView, View.ALPHA, 1f, 0f)
             alphaAnimation.duration = 700
-            alphaAnimation.addListener(object : Animator.AnimatorListener{
+            alphaAnimation.addListener(object : Animator.AnimatorListener {
                 override fun onAnimationStart(animation: Animator) {
 
                 }
@@ -231,20 +294,28 @@ class MainActivity : BaseActivity() {
             alphaAnimation.start()
         }
 
-        viewModel.showRainLiveData.observe(this){
-            val rainView = View.inflate(this,R.layout.item_rain_layout,null)
+        viewModel.showRainLiveData.observe(this) {
+            val rainView = View.inflate(this, R.layout.item_rain_layout, null)
             rainView.visibility = View.INVISIBLE
             binding.rootView.addView(rainView)
             rainView.x = it.first
             rainView.y = it.second
             rainView.visibility = View.VISIBLE
-            val layoutParamsMargin = ViewGroup.MarginLayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT)
-            layoutParamsMargin.setMargins(0,Random().nextInt(15.convertDp()),0,0)
+            val layoutParamsMargin = ViewGroup.MarginLayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            layoutParamsMargin.setMargins(0, Random().nextInt(15.convertDp()), 0, 0)
             rainView.layoutParams = layoutParamsMargin
 
-            val animator = ObjectAnimator.ofFloat(rainView, "y", rainView.y, rainView.y + Random().nextInt(100) + 300)
+            val animator = ObjectAnimator.ofFloat(
+                rainView,
+                "y",
+                rainView.y,
+                rainView.y + Random().nextInt(100) + 300
+            )
             animator.duration = (Random().nextInt(200 + 1) + 300).toLong()
-            animator.addListener(object : Animator.AnimatorListener{
+            animator.addListener(object : Animator.AnimatorListener {
                 override fun onAnimationStart(animation: Animator) {
 
                 }
@@ -265,32 +336,40 @@ class MainActivity : BaseActivity() {
             animator.start()
         }
 
-        viewModel.showPopPercentLiveData.observe(this){
+        viewModel.showPopPercentLiveData.observe(this) {
             binding.tvPop.text = it
         }
-        viewModel.showCiInformationLivedata.observe(this){
+        viewModel.showCiInformationLivedata.observe(this) {
             val content = "體感 : $it"
             binding.tvCi.text = content
         }
-        viewModel.showTempLiveData.observe(this){
+        viewModel.showTempLiveData.observe(this) {
             binding.tvTemp.text = it
         }
-        viewModel.showOneWeekForecastLiveData.observe(this){
+        viewModel.showOneWeekForecastLiveData.observe(this) {
             showOneWeekView(it)
 
         }
-        viewModel.showLocationList.observe(this){
+        viewModel.showLocationList.observe(this) {
             showLocationList(it)
         }
-        viewModel.showSecondLocationName.observe(this){
+        viewModel.showSecondLocationName.observe(this) {
             binding.tvLocationName1.text = it
         }
 
     }
 
+    private fun requestGPSPermission() {
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+            666
+        )
+    }
+
     private fun showLocationList(it: MutableList<String>) {
         binding.locationList1.apply {
-            adapter = SecondLocationAdapter(it) {locationName->
+            adapter = SecondLocationAdapter(it) { locationName ->
                 viewModel.onLocationSelectedListener(locationName)
             }
         }
@@ -299,7 +378,12 @@ class MainActivity : BaseActivity() {
     private fun showOneWeekView(it: MutableList<WeatherOneWeekData>) {
 
         val targetHeight = Tool.getScreenBottomY(this) - binding.basicInfoView.bottom - 200
-        Log.i("Michael","targetHeight : $targetHeight basicInfoView Bottom : ${binding.basicInfoView.bottom} screenBottomY : ${Tool.getScreenBottomY(this)}")
+        Log.i(
+            "Michael",
+            "targetHeight : $targetHeight basicInfoView Bottom : ${binding.basicInfoView.bottom} screenBottomY : ${
+                Tool.getScreenBottomY(this)
+            }"
+        )
         val layoutParams = binding.oneWeekList.layoutParams
         layoutParams.height = targetHeight
         binding.oneWeekList.layoutParams = layoutParams
@@ -324,9 +408,9 @@ class MainActivity : BaseActivity() {
             val targetLeftX = ivCloudyLeft.getLocationXY()[0]
             val targetY = ivCloudyLeft.getLocationXY()[1] + ivCloudyLeft.height
             val targetRightX = ivCloudyRight.getLocationXY()[0]
-            viewModel.onReadyToShowRaining(targetLeftX,targetRightX,targetY)
-            if (isShowThunder){
-                viewModel.onReadyToShowThunder(targetLeftX,targetRightX,targetY)
+            viewModel.onReadyToShowRaining(targetLeftX, targetRightX, targetY)
+            if (isShowThunder) {
+                viewModel.onReadyToShowThunder(targetLeftX, targetRightX, targetY)
             }
         }
 
@@ -349,7 +433,7 @@ class MainActivity : BaseActivity() {
             val targetLeftX = ivCloudyLeft.getLocationXY()[0]
             val targetY = ivCloudyLeft.getLocationXY()[1] + ivCloudyLeft.height
             val targetRightX = ivCloudyRight.getLocationXY()[0]
-            viewModel.onReadyToShowRaining(targetLeftX,targetRightX,targetY)
+            viewModel.onReadyToShowRaining(targetLeftX, targetRightX, targetY)
         }
 
         viewModel.onStartCloudyAnimation()
@@ -390,7 +474,7 @@ class MainActivity : BaseActivity() {
         viewModel.onStartSunAnimation()
     }
 
-    private fun showLocation(dataList: MutableList<Pair<String,String>>) {
+    private fun showLocation(dataList: MutableList<Pair<String, String>>) {
         binding.locationList.apply {
             adapter = LocationAdapter(dataList) {
                 viewModel.onCitySelectedListener(it)

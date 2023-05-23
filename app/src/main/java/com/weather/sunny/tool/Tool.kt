@@ -1,7 +1,10 @@
 package com.weather.sunny.tool
 
+import android.Manifest
 import android.app.Activity
 import android.content.Context
+import android.content.pm.PackageManager
+import android.graphics.Color
 import android.os.Build
 import android.util.DisplayMetrics
 import android.util.Size
@@ -9,6 +12,8 @@ import android.view.View
 import android.view.WindowInsets
 import android.view.WindowManager
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.google.gson.Gson
 import com.weather.sunny.application.MyApplication
 import java.text.SimpleDateFormat
@@ -46,9 +51,13 @@ object Tool {
         return (this * scale +0.5f).toInt()
     }
 
+    fun isHasGPSPermission():Boolean{
+       return ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+    }
+
     fun String.formatTime():String{
         val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-        val sdf1 = SimpleDateFormat("MM-dd HH:mm:ss", Locale.getDefault())
+        val sdf1 = SimpleDateFormat("MM/dd HHa", Locale.getDefault())
         var date = Date()
         try {
             date = sdf.parse(this) as Date
@@ -81,6 +90,10 @@ object Tool {
         val displayMetrics = DisplayMetrics()
         activity.windowManager.defaultDisplay.getMetrics(displayMetrics)
         return displayMetrics.heightPixels
+    }
+
+    fun getColor(resId : Int) : Int {
+        return ContextCompat.getColor(getContext(),resId)
     }
 
     fun getLocationList():MutableList<Pair<String,String>>{

@@ -5,7 +5,7 @@
 
     <View
         android:id="@+id/rain"
-        android:background="#7A7878"
+        android:background="#D6D4D4"
         android:layout_width="2dp"
         android:layout_height="15dp"/>
 

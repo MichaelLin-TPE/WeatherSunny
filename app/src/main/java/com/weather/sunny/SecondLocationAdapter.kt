@@ -12,11 +12,11 @@ class SecondLocationAdapter(private val dataList: MutableList<String>, private v
         private val onLocationSelectedListener: OnLocationSelectedListener
     ) :
         RecyclerView.ViewHolder(binding.root) {
-        fun showCity(pair: String) {
-            binding.data = pair
+        fun showCity(name: String) {
+            binding.data = name
             binding.executePendingBindings()
             binding.rootView.setOnClickListener {
-                onLocationSelectedListener.onCitySelected(pair)
+                onLocationSelectedListener.onCitySelected(name)
             }
         }
     }

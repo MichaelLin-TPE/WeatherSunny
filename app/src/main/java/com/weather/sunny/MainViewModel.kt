@@ -3,7 +3,6 @@ package com.weather.sunny
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
-import com.google.gson.Gson
 import com.weather.sunny.base.BaseViewModel
 import com.weather.sunny.bean.Weather36Time
 import com.weather.sunny.bean.Weather36WeatherElement
@@ -15,7 +14,6 @@ import com.weather.sunny.bean.WeatherOneWeekTime
 import com.weather.sunny.http.ApiWrapper
 import com.weather.sunny.tool.Tool
 import com.weather.sunny.tool.Tool.formatTime
-import com.weather.sunny.tool.Tool.getStringExtension
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -49,6 +47,8 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
     val showTempLiveData = MutableLiveData<String>()
     val showOneWeekForecastLiveData = MutableLiveData<MutableList<WeatherOneWeekData>>()
     val showLocationList = MutableLiveData<MutableList<String>>()
+    val requestGPSPermissionLiveData = MutableLiveData<Boolean>()
+    val searchLocationLiveData = MutableLiveData<Boolean>()
     private var rainingDisposable: Disposable? = null
     private var thunderDisposable: Disposable? = null
     private var targetSecondLocationName = ""
@@ -62,16 +62,37 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
     private var maxT = ""
     private val oneWeekDataList = ArrayList<WeatherOneWeekData>()
     private val allLocationData = ArrayList<WeatherOneWeekLocations>()
+    private var area: String = ""
+    private var city: String = ""
 
     init {
-        showLocationName.value = Tool.getLocationList()[0].first
+        if (Tool.isHasGPSPermission()) {
+            searchLocationLiveData.value = true
+        } else {
+            requestGPSPermissionLiveData.value = true
+        }
+    }
+
+    fun onStartToFlow() {
+        showLocationName.value = city.ifEmpty { Tool.getLocationList()[0].first }
         locationListLiveData.value = Tool.getLocationList()
-        searchWeatherByLocation(Tool.getLocationList()[0].first)
+        searchWeatherByLocation(city.ifEmpty { Tool.getLocationList()[0].first })
         showCurrentTime()
-        searchWeatherByLocationForOneWeek(Tool.getLocationList()[0].second)
+        searchWeatherByLocationForOneWeek(getLocationCode())
+    }
 
-
-        Log.i("Michael", "getString : ${R.string.internet_error.getStringExtension()}")
+    private fun getLocationCode(): String {
+        if (city.isNotEmpty()) {
+            var locationCode = ""
+            for (pair in Tool.getLocationList()) {
+                if (pair.first == city) {
+                    locationCode = pair.second
+                    break
+                }
+            }
+            return locationCode
+        }
+        return Tool.getLocationList()[0].second
     }
 
     private fun searchWeatherByLocationForOneWeek(locationKey: String) {
@@ -82,18 +103,28 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
                 showErrorMsg(R.string.internet_error.toString())
             }.subscribe({
                 it.record?.locationList?.let { locationList ->
-                    if (locationList.isNotEmpty() && locationList[0].locationDataList != null) {
+                    if (area.isNotEmpty()) {
+                        targetSecondLocationName = area
+                        showSecondLocationName.value = targetSecondLocationName
+                    } else if (locationList.isNotEmpty() && locationList[0].locationDataList != null) {
                         if (locationList[0].locationDataList!!.isNotEmpty()) {
                             locationList[0].locationDataList!![0].locationName?.let { locationName ->
                                 targetSecondLocationName = locationName
                                 showSecondLocationName.value = locationName
                             }
                         }
-                        allLocationData.clear()
-                        allLocationData.addAll(locationList)
-                        handleLocationList(locationList)
-                        showSecondLocationList(locationList)
                     }
+                    Log.i("Michael", "targetSecondLocationName : $targetSecondLocationName")
+
+                    if (targetSecondLocationName.isEmpty()) {
+                        showErrorMsg("未知錯誤 , 請稍後再試")
+                        return@subscribe
+                    }
+
+                    allLocationData.clear()
+                    allLocationData.addAll(locationList)
+                    handleLocationList(locationList)
+                    showSecondLocationList(locationList)
                 }
 
             }, {
@@ -116,7 +147,7 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
         if (list.isEmpty()) {
             return
         }
-        showSecondLocationName.value = list[0]
+        showSecondLocationName.value = area.ifEmpty { list[0] }
         showLocationList.value = list
     }
 
@@ -168,7 +199,6 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
                     "${data.startTime.formatTime()}\n|\n${data.endTime.formatTime()}"
                 )
             )
-            Log.i("Michael", "新增資料 : ${Gson().toJson(oneWeekDataList)}")
         }
     }
 
@@ -336,6 +366,8 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
     }
 
     fun onCitySelectedListener(pair: Pair<String, String>) {
+        city = ""
+        area = ""
         showLocationName.value = pair.first
         isOpenLocationList = false
         startAnimationLocationListLiveData.value = Pair(1f, 0f)
@@ -459,6 +491,18 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
         isOpenSecondLocationList = !isOpenSecondLocationList
         startAnimationSecondLocationListLiveData.value =
             if (isOpenSecondLocationList) Pair(0f, 1f) else Pair(1f, 0f)
+    }
+
+    fun onCatchStateAndArea(city: String?, state: String?) {
+        if (city == null || state == null) {
+            onStartToFlow()
+            return
+        }
+        this.area = city
+        this.city = state.replace("台", "臺")
+        Log.i("Michael", "city : ${this.city} area : $area")
+        onStartToFlow()
+
     }
 
 

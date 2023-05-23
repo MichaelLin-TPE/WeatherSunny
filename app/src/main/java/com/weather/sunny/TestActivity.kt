@@ -1,6 +1,5 @@
 package com.weather.sunny
 
-import android.R.attr.banner
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil

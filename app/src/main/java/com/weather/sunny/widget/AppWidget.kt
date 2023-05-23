@@ -5,21 +5,16 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.pm.PackageManager
-import android.location.Geocoder
 import android.os.Looper
 import android.util.Log
 import android.widget.RemoteViews
 import androidx.core.app.ActivityCompat
-import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
-import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.weather.sunny.R
-import java.lang.Exception
-import java.util.Locale
 
 class AppWidget : AppWidgetProvider(){
 

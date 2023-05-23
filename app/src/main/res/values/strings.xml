@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">WeatherSunny</string>
+    <string name="app_name">WeatherCast</string>
     <string name="location_name">地點</string>
     <string name="internet_error">網路不給力,請稍後在試</string>
 </resources>

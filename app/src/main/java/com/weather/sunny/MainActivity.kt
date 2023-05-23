@@ -6,7 +6,6 @@ import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.location.Geocoder
-import android.location.Location
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -16,7 +15,6 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.tasks.OnSuccessListener
 import com.weather.sunny.base.BaseActivity
 import com.weather.sunny.bean.WeatherOneWeekData
 import com.weather.sunny.databinding.ActivityMainBinding
